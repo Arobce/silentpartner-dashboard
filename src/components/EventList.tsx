@@ -22,13 +22,23 @@ try {
 }
 
 export interface EventItem {
-  id: number;
+  id: number | string;
   name: string;
   date: string;
   startDate?: string;
   endDate?: string;
   isMultiDay?: boolean;
   status?: string;
+  code?: string;
+  qrData?: string;
+  category?: string;
+  description?: string;
+  companyName?: string;
+  location?: string;
+  isOnline?: boolean;
+  capacity?: number;
+  price?: number;
+  hostId?: string;
 }
 
 interface EventListProps {
@@ -57,7 +67,8 @@ function EventCard({
   event: EventItem;
   onViewDetails?: (event: EventItem) => void;
 }) {
-  const qrData = `${event.name}|#${event.id}`;
+  // Use qrData from API if available, otherwise generate from event data
+  const qrData = event.qrData || `${event.name}|#${event.id}`;
   const qrPreviewUrl = getQRCodeUrl(qrData, 80);
   const qrDownloadUrl = getQRCodeUrl(qrData, 256);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,7 +79,7 @@ function EventCard({
         const dataUrl = canvasRef.current.toDataURL("image/png");
         const link = document.createElement("a");
         link.href = dataUrl;
-        link.download = `event-${event.id}-qr.png`;
+        link.download = `event-${String(event.id)}-qr.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -85,7 +96,7 @@ function EventCard({
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `event-${event.id}-qr.png`;
+      link.download = `event-${String(event.id)}-qr.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

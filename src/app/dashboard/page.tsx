@@ -7,6 +7,8 @@ import {
   Users,
 } from "lucide-react";
 import { CreateEventButton } from "@/components/CreateEventButton";
+import { EventDetailsModal } from "@/components/EventDetailsModal";
+import type { EventItem } from "@/components/EventList";
 
 interface RecentEvent {
   id: string;
@@ -17,7 +19,10 @@ interface RecentEvent {
 
 export default function DashboardPage() {
   const [recentEvents, setRecentEvents] = React.useState<RecentEvent[]>([]);
+  const [allEvents, setAllEvents] = React.useState<EventItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedEvent, setSelectedEvent] = React.useState<EventItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     const fetchEvents = async () => {
@@ -27,10 +32,13 @@ export default function DashboardPage() {
           throw new Error("Failed to fetch events");
         }
         const data = await response.json();
-        setRecentEvents(data.events || []);
+        const events = data.events || [];
+        setRecentEvents(events);
+        setAllEvents(events);
       } catch (error) {
         console.error("Error fetching events:", error);
         setRecentEvents([]);
+        setAllEvents([]);
       } finally {
         setIsLoading(false);
       }
@@ -38,6 +46,19 @@ export default function DashboardPage() {
 
     fetchEvents();
   }, []);
+
+  const handleViewDetails = (eventId: string) => {
+    const event = allEvents.find((e) => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Top Stats Bar */}
@@ -88,13 +109,16 @@ export default function DashboardPage() {
                   <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
                     Status
                   </th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={4}
                       className="px-6 py-12 text-center text-sm text-medium-gray"
                     >
                       Loading events...
@@ -103,7 +127,7 @@ export default function DashboardPage() {
                 ) : recentEvents.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={4}
                       className="px-6 py-12 text-center text-sm text-medium-gray"
                     >
                       No events yet. Create your first event to get started.
@@ -124,6 +148,15 @@ export default function DashboardPage() {
                       <td className="px-6 py-4">
                         <StatusBadge status={event.status} />
                       </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleViewDetails(event.id)}
+                          className="text-sm font-medium text-primary transition-colors hover:text-primary-dark"
+                          type="button"
+                        >
+                          View Details
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -132,6 +165,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <EventDetailsModal
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
