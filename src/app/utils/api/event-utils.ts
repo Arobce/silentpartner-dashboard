@@ -36,5 +36,7 @@ export function makeEventCode(name: string) {
 
 
 export function makeJoinUrl(code: string) {
-    throw new Error("Function not implemented.");
+  // Generate a join URL for the event
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  return `${baseUrl}/events/${code}/join`;
 }
