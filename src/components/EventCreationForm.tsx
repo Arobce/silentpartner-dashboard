@@ -13,11 +13,13 @@ const EVENT_CATEGORIES = [
 
 export interface EventFormData {
   eventName: string;
-  companyName: string;
+  organizationName: string;
   category: string;
   description: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   time: string;
+  isMultiDay: boolean;
   isOnline: boolean;
   location: string;
   capacity: string;
@@ -26,11 +28,13 @@ export interface EventFormData {
 
 const initialFormData: EventFormData = {
   eventName: "",
-  companyName: "",
+  organizationName: "",
   category: "",
   description: "",
-  date: "",
+  startDate: "",
+  endDate: "",
   time: "",
+  isMultiDay: false,
   isOnline: false,
   location: "",
   capacity: "",
@@ -49,6 +53,7 @@ interface EventCreationFormProps {
 
 export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps) {
   const [formData, setFormData] = useState<EventFormData>(initialFormData);
+  const [dateError, setDateError] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -63,10 +68,23 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
       [name]:
         type === "checkbox" ? checked : type === "number" ? value : value,
     }));
+
+    if (name === "isMultiDay" && !checked) {
+      setFormData((prev) => ({ ...prev, endDate: "" }));
+    }
+    setDateError("");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setDateError("");
+
+    if (formData.isMultiDay && formData.startDate && formData.endDate) {
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        setDateError("End date cannot be before start date.");
+        return;
+      }
+    }
 
     const form = e.currentTarget as HTMLFormElement;
     if (!form.checkValidity()) {
@@ -108,16 +126,16 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
         </div>
         <div>
           <label
-            htmlFor="companyName"
+            htmlFor="organizationName"
             className="mb-1 block text-sm text-medium-gray"
           >
-            Company Name
+            Organization Name
           </label>
           <input
             type="text"
-            id="companyName"
-            name="companyName"
-            value={formData.companyName}
+            id="organizationName"
+            name="organizationName"
+            value={formData.organizationName}
             onChange={handleChange}
             required
             className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -168,24 +186,82 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
       </div>
 
       <div className="space-y-4">
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm text-medium-gray">
+            <input
+              type="checkbox"
+              name="isMultiDay"
+              checked={formData.isMultiDay}
+              onChange={handleChange}
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            Multi-day event
+          </label>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="date" className="mb-1 block text-sm text-medium-gray">
-              Date
+            <label
+              htmlFor="startDate"
+              className="mb-1 block text-sm text-medium-gray"
+            >
+              Start Date
             </label>
             <input
               type="date"
-              id="date"
-              name="date"
-              value={formData.date}
+              id="startDate"
+              name="startDate"
+              value={formData.startDate}
               onChange={handleChange}
               required
               className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
+          {formData.isMultiDay ? (
+            <div>
+              <label
+                htmlFor="endDate"
+                className="mb-1 block text-sm text-medium-gray"
+              >
+                End Date
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
+                required
+                min={formData.startDate || undefined}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          ) : (
+            <div>
+              <label
+                htmlFor="time"
+                className="mb-1 block text-sm text-medium-gray"
+              >
+                Time
+              </label>
+              <input
+                type="time"
+                id="time"
+                name="time"
+                value={formData.time}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          )}
+        </div>
+        {formData.isMultiDay && (
           <div>
-            <label htmlFor="time" className="mb-1 block text-sm text-medium-gray">
-              Time
+            <label
+              htmlFor="time"
+              className="mb-1 block text-sm text-medium-gray"
+            >
+              Start Time
             </label>
             <input
               type="time"
@@ -194,10 +270,13 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
               value={formData.time}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full max-w-[200px] rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
-        </div>
+        )}
+        {dateError && (
+          <p className="text-sm text-error" role="alert">{dateError}</p>
+        )}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm text-medium-gray">
             <input
@@ -270,7 +349,6 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
         )}
       </div>
 
-      {/* Actions */}
       <div className="flex justify-end gap-3 pt-2">
         <button
           type="button"
