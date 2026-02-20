@@ -110,7 +110,6 @@ export async function POST(req: Request) {
       qrData,
       date: startsAt,
       location,
-      status: "draft",
       attendeeCount: 0,
 
       // Extra fields

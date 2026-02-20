@@ -43,12 +43,6 @@ export function EventDetailsModal({
 
         {/* Content Section */}
         <div className="p-6">
-          {/* Status Badge */}
-          <div className="mb-6 inline-block">
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              {event.status || "Active"}
-            </span>
-          </div>
 
           {/* Main Grid */}
           <div className="space-y-6">

@@ -106,9 +106,7 @@ export default function DashboardPage() {
                   <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
                     Date
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
-                    Status
-                  </th>
+                
                   <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
                     Action
                   </th>
@@ -145,9 +143,7 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 text-medium-gray">
                         {event.date}
                       </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={event.status} />
-                      </td>
+              
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleViewDetails(event.id)}
