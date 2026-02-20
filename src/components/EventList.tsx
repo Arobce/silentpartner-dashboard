@@ -25,6 +25,9 @@ export interface EventItem {
   id: number;
   name: string;
   date: string;
+  startDate?: string;
+  endDate?: string;
+  isMultiDay?: boolean;
   status?: string;
 }
 
@@ -35,6 +38,16 @@ interface EventListProps {
 
 function getQRCodeUrl(data: string, size = 80): string {
   return `${QR_API_BASE}?data=${encodeURIComponent(data)}&size=${size}x${size}`;
+}
+
+function getEventDayCount(startDate?: string, endDate?: string): number | null {
+  if (!startDate || !endDate) return null;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (end < start) return null;
+  const diffTime = end.getTime() - start.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays + 1; // Include both start and end day
 }
 
 function EventCard({
@@ -114,7 +127,17 @@ function EventCard({
 
       {/* Content */}
       <div className="pr-20">
-        <p className="text-xs font-medium text-primary">#{event.id}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-medium text-primary">#{event.id}</p>
+          {event.isMultiDay &&
+            event.startDate &&
+            event.endDate &&
+            getEventDayCount(event.startDate, event.endDate) !== null && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                {getEventDayCount(event.startDate, event.endDate)} Day Event
+              </span>
+            )}
+        </div>
         <h3 className="mt-1 text-lg font-semibold text-dark-gray line-clamp-2">
           {event.name}
         </h3>

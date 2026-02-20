@@ -17,16 +17,23 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<EventItem[]>([]);
 
   const addEvent = useCallback((payload: EventSubmitPayload) => {
-    const dateDisplay =
-      payload.date && payload.time
-        ? `${payload.date} ${payload.time}`
-        : payload.date || "";
+    let dateDisplay: string;
+    if (payload.isMultiDay && payload.startDate && payload.endDate) {
+      dateDisplay = `${payload.startDate} – ${payload.endDate}`;
+    } else if (payload.startDate && payload.time) {
+      dateDisplay = `${payload.startDate} ${payload.time}`;
+    } else {
+      dateDisplay = payload.startDate || "";
+    }
     setEvents((prev) => [
       ...prev,
       {
         id: nextId++,
         name: payload.eventName,
         date: dateDisplay,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+        isMultiDay: payload.isMultiDay,
         status: "Draft",
       },
     ]);

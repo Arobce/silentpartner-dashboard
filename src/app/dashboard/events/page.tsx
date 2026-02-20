@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Plus } from "lucide-react";
 import { EventList } from "@/components/EventList";
 import { useEvents } from "@/contexts/EventsContext";
 import { CreateEventButton } from "@/components/CreateEventButton";

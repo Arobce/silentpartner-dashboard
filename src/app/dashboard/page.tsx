@@ -14,7 +14,6 @@ const stats = [
   { label: "Total Events", value: "0", icon: Calendar },
   { label: "Total Signups", value: "0", icon: Users },
   { label: "Revenue", value: "$0", icon: LayoutDashboard },
-  { label: "Active Now", value: "0", icon: Users },
 ];
 
 export default function DashboardPage() {
@@ -23,7 +22,7 @@ export default function DashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Top Stats Bar */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <div
             key={stat.label}
