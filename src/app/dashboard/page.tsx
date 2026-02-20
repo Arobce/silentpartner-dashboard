@@ -193,6 +193,9 @@ function CreateEventButton() {
 }
 
 function CreateEventModal({ onClose }: { onClose: () => void }) {
+  // TODO: Get hostId from authenticated user
+  const hostId = "test-user-id";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
@@ -223,6 +226,7 @@ function CreateEventModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <EventCreationForm
+          hostId={hostId}
           onSubmit={() => onClose()}
           onCancel={() => onClose()}
         />

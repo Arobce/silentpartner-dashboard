@@ -45,10 +45,13 @@ export type EventSubmitPayload = Omit<EventFormData, "capacity" | "price"> & {
 interface EventCreationFormProps {
   onSubmit?: (data: EventSubmitPayload) => void;
   onCancel?: () => void;
+  hostId: string;
 }
 
-export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps) {
+export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationFormProps) {
   const [formData, setFormData] = useState<EventFormData>(initialFormData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -65,8 +68,9 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     const form = e.currentTarget as HTMLFormElement;
     if (!form.checkValidity()) {
@@ -80,13 +84,48 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
       price: formData.price ? Number(formData.price) : 0,
     };
 
-    console.log("Event form submitted:", payload);
-    alert("Event created successfully!");
-    onSubmit?.(payload);
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...payload,
+          hostId,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create event");
+      }
+
+      const data = await response.json();
+      console.log("Event created successfully:", data);
+      
+      // Reset form
+      setFormData(initialFormData);
+      
+      // Call onSubmit callback
+      onSubmit?.(payload);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "An error occurred";
+      setError(message);
+      console.error("Error creating event:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-5">
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+          {error}
+        </div>
+      )}
       <div className="space-y-4">
         <div>
           <label
@@ -275,15 +314,17 @@ export function EventCreationForm({ onSubmit, onCancel }: EventCreationFormProps
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-dark-gray transition-colors hover:bg-light-gray"
+          disabled={isLoading}
+          className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-dark-gray transition-colors hover:bg-light-gray disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+          disabled={isLoading}
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create Event
+          {isLoading ? "Creating..." : "Create Event"}
         </button>
       </div>
     </form>

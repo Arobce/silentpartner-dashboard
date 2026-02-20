@@ -106,7 +106,7 @@ export async function POST(req: Request) {
       name: eventName,
       code,
       qrData,
-      date: startsAt, // Firestore Timestamp
+      date: startsAt,
       location,
       status: "draft",
       attendeeCount: 0,
@@ -129,6 +129,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, eventId: docRef.id, code, qrData });
   } catch (e: any) {
+    console.error("POST /api/events error:", e);
     return NextResponse.json({ error: e?.message ?? "Server error" }, { status: 500 });
   }
 }
