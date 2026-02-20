@@ -2,12 +2,24 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #333333;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: #15b286;
+  --color-primary-dark: #0f8f6f;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray: #f2f2f2;
+  --color-light-gray: #e8e8e8;
+  --color-medium-gray: #999999;
+  --color-dark-gray: #333333;
+  --color-error: #ff3b30;
+  --color-success: #34c759;
+  --color-success-light: #d4f8e8;
+  --color-border: #e0e0e0;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
