@@ -6,24 +6,47 @@ import {
   Calendar,
   Users,
 } from "lucide-react";
-import { EventList } from "@/components/EventList";
 import { CreateEventButton } from "@/components/CreateEventButton";
-import { useEvents } from "@/contexts/EventsContext";
 
-const stats = [
-  { label: "Total Events", value: "0", icon: Calendar },
-  { label: "Total Signups", value: "0", icon: Users },
-  { label: "Revenue", value: "$0", icon: LayoutDashboard },
-];
+interface RecentEvent {
+  id: string;
+  name: string;
+  date: string;
+  status: string;
+}
 
 export default function DashboardPage() {
-  const { events } = useEvents();
+  const [recentEvents, setRecentEvents] = React.useState<RecentEvent[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
+  React.useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("/api/events?hostId=test-user-id");
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+        const data = await response.json();
+        setRecentEvents(data.events || []);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        setRecentEvents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Top Stats Bar */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat) => (
+        {[
+          { label: "Total Events", value: recentEvents.length, icon: Calendar },
+          { label: "Total Signups", value: "0", icon: Users },
+          { label: "Revenue", value: "$0", icon: LayoutDashboard },
+        ].map((stat) => (
           <div
             key={stat.label}
             className="rounded-xl border border-border bg-white p-5 shadow-sm"
@@ -35,7 +58,7 @@ export default function DashboardPage() {
               <stat.icon className="h-5 w-5 text-medium-gray" />
             </div>
             <p className="mt-2 text-2xl font-bold text-dark-gray">
-              {stat.label === "Total Events" ? events.length : stat.value}
+              {stat.value}
             </p>
           </div>
         ))}
@@ -50,67 +73,74 @@ export default function DashboardPage() {
           <CreateEventButton />
         </div>
 
-            {/* Recent Events Table */}
-            <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[500px]">
-                  <thead>
-                    <tr className="border-b border-border bg-gray">
-                      <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
-                        Event Name
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
-                        Status
-                      </th>
+        {/* Recent Events Table */}
+        <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-125">
+              <thead>
+                <tr className="border-b border-border bg-gray">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
+                    Event Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-medium-gray">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-6 py-12 text-center text-sm text-medium-gray"
+                    >
+                      Loading events...
+                    </td>
+                  </tr>
+                ) : recentEvents.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-6 py-12 text-center text-sm text-medium-gray"
+                    >
+                      No events yet. Create your first event to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  recentEvents.map((event) => (
+                    <tr
+                      key={event.id}
+                      className="transition-colors hover:bg-gray"
+                    >
+                      <td className="px-6 py-4 font-medium text-dark-gray">
+                        {event.name}
+                      </td>
+                      <td className="px-6 py-4 text-medium-gray">
+                        {event.date}
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge status={event.status} />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {recentEvents.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={3}
-                          className="px-6 py-12 text-center text-sm text-medium-gray"
-                        >
-                          No events yet. Create your first event to get started.
-                        </td>
-                      </tr>
-                    ) : (
-                      recentEvents.map((event) => (
-                        <tr
-                          key={event.id}
-                          className="transition-colors hover:bg-gray"
-                        >
-                          <td className="px-6 py-4 font-medium text-dark-gray">
-                            {event.name}
-                          </td>
-                          <td className="px-6 py-4 text-medium-gray">
-                            {event.date}
-                          </td>
-                          <td className="px-6 py-4">
-                            <StatusBadge status={event.status} />
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: Readonly<{ status: string }>) {
   const styles: Record<string, string> = {
-    Live: "bg-success-light text-success",
-    Draft: "bg-light-gray text-medium-gray",
-    Ended: "bg-light-gray text-medium-gray",
+    live: "bg-success-light text-success",
+    draft: "bg-light-gray text-medium-gray",
+    ended: "bg-light-gray text-medium-gray",
   };
   const style = styles[status] ?? "bg-light-gray text-medium-gray";
 
@@ -120,64 +150,5 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status}
     </span>
-  );
-}
-
-function CreateEventButton() {
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-
-  return (
-    <>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
-      >
-        <Plus className="h-4 w-4" />
-        Create Event
-      </button>
-
-      {isModalOpen && (
-        <CreateEventModal onClose={() => setIsModalOpen(false)} />
-      )}
-    </>
-  );
-}
-
-function CreateEventModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-dark-gray/50"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Modal */}
-      <div
-        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-white p-6 shadow-xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-      >
-        <div className="flex items-center justify-between">
-          <h3 id="modal-title" className="text-lg font-semibold text-dark-gray">
-            Create Event
-          </h3>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 text-medium-gray transition-colors hover:bg-light-gray hover:text-dark-gray"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <EventCreationForm
-          onSubmit={() => onClose()}
-          onCancel={() => onClose()}
-        />
-      </div>
-    </div>
   );
 }

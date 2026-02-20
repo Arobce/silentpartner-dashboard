@@ -3,17 +3,10 @@
 import React from "react";
 import { Plus, X } from "lucide-react";
 import { EventCreationForm } from "@/components/EventCreationForm";
-import { useEvents } from "@/contexts/EventsContext";
 import type { EventSubmitPayload } from "@/components/EventCreationForm";
 
 export function CreateEventButton() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const { addEvent } = useEvents();
-
-  const handleSubmit = (payload: EventSubmitPayload) => {
-    addEvent(payload);
-    setIsModalOpen(false);
-  };
 
   const handleClose = () => setIsModalOpen(false);
 
@@ -56,7 +49,7 @@ export function CreateEventButton() {
               </button>
             </div>
             <EventCreationForm
-              onSubmit={handleSubmit}
+              hostId="test-user-id"
               onCancel={handleClose}
             />
           </div>

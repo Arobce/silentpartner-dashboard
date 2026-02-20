@@ -6,7 +6,6 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 import { CreateEventBody, EventListItem } from "@/types/api";
@@ -21,14 +20,17 @@ export async function GET(req: Request) {
 
     const baseRef = collection(db, "events");
 
-    // If hostId is provided, filter; otherwise return all
-    const q = hostId
-      ? query(baseRef, where("hostId", "==", hostId), orderBy("date", "desc"))
-      : query(baseRef, orderBy("date", "desc"));
-
+    // Get all events first (no composite index needed)
+    const q = query(baseRef, orderBy("date", "desc"));
     const snap = await getDocs(q);
 
-    const events: EventListItem[] = snap.docs.map((doc) => {
+    // Filter by hostId in code if provided
+    const allDocs = snap.docs.filter(doc => {
+      if (!hostId) return true;
+      return doc.data().hostId === hostId;
+    });
+
+    const events: EventListItem[] = allDocs.map((doc) => {
       const data = doc.data() as any;
       const d = toDate(data.date);
 
@@ -36,7 +38,7 @@ export async function GET(req: Request) {
         id: doc.id,
         name: String(data.name ?? ""),
         date: d ? formatForTable(d) : "",
-        status: String(data.status ?? "draft"),
+        status: String(data.status ?? "live"),
         location: data.location,
         attendeeCount: data.attendeeCount ?? 0,
         code: data.code,

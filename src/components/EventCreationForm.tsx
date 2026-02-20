@@ -47,9 +47,9 @@ export type EventSubmitPayload = Omit<EventFormData, "capacity" | "price"> & {
 };
 
 interface EventCreationFormProps {
-  onSubmit?: (data: EventSubmitPayload) => void;
-  onCancel?: () => void;
-  hostId: string;
+  readonly onSubmit?: (data: EventSubmitPayload) => void;
+  readonly onCancel?: () => void;
+  readonly hostId: string;
 }
 
 export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationFormProps) {
@@ -66,10 +66,16 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
+    let newValue: string | boolean = value;
+    if (type === "checkbox") {
+      newValue = checked;
+    } else if (type === "number") {
+      newValue = value;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? checked : type === "number" ? value : value,
+      [name]: newValue,
     }));
 
     if (name === "isMultiDay" && !checked) {
@@ -78,7 +84,7 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
     setDateError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -96,15 +102,27 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
 
     setIsLoading(true);
     try {
+      // Transform form data to match API expectations
+      const apiPayload = {
+        eventName: payload.eventName,
+        companyName: payload.organizationName,
+        category: payload.category,
+        description: payload.description,
+        date: payload.startDate, // Use startDate as the main date
+        time: payload.time,
+        isOnline: payload.isOnline,
+        location: payload.location,
+        capacity: payload.capacity,
+        price: payload.price,
+        hostId,
+      };
+
       const response = await fetch("/api/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...payload,
-          hostId,
-        }),
+        body: JSON.stringify(apiPayload),
       });
 
       if (!response.ok) {
@@ -117,6 +135,9 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
       
       // Reset form
       setFormData(initialFormData);
+      
+      // Reload page to show the new event
+      window.location.reload();
       
       // Call onSubmit callback
       onSubmit?.(payload);
@@ -301,7 +322,7 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
               value={formData.time}
               onChange={handleChange}
               required
-              className="w-full max-w-[200px] rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full max-w-50 rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         )}
