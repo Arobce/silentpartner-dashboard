@@ -11,7 +11,7 @@ export type CreateEventBody = {
   capacity?: number;
   price?: number;
   hostId?: string; // for now
-  speakers?: { name: string; title: string }[];
+  speakers?: { name?: string; title?: string }[];
 };
 
 export type EventListItem = {
@@ -30,4 +30,5 @@ export type EventListItem = {
   isOnline?: boolean;
   capacity?: number;
   price?: number;
+  speakers?: { name?: string; title?: string }[];
 };

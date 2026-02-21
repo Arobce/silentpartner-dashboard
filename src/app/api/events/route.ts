@@ -42,7 +42,7 @@ export async function GET(req: Request) {
         location: data.location,
         attendeeCount: data.attendeeCount ?? 0,
         code: data.code,
-        qrData: data.code,
+        qrData: data.qrData ?? data.code,
         hostId: data.hostId,
         companyName: data.companyName,
         category: data.category,
@@ -51,6 +51,7 @@ export async function GET(req: Request) {
         capacity: data.capacity,
         isPopular: data.isPopular,
         price: data.price,
+        speakers: Array.isArray(data.speakers) ? data.speakers : [],
       };
     });
 

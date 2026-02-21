@@ -21,6 +21,11 @@ try {
   // qrcode.react not installed - will use API fallback
 }
 
+export interface SpeakerItem {
+  name?: string;
+  title?: string;
+}
+
 export interface EventItem {
   id: number | string;
   name: string;
@@ -37,6 +42,7 @@ export interface EventItem {
   location?: string;
   isOnline?: boolean;
   capacity?: number;
+  speakers?: SpeakerItem[];
   price?: number;
   hostId?: string;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, MapPin, Users, DollarSign, Tag, Building2, Globe } from "lucide-react";
+import { X, MapPin, Users, DollarSign, Tag, Building2, Globe, Mic2 } from "lucide-react";
 import type { EventItem } from "./EventList";
 
 interface EventDetailsModalProps {
@@ -149,6 +149,33 @@ export function EventDetailsModal({
                 </div>
               )}
             </div>
+
+            {/* Speakers */}
+            {event.speakers && event.speakers.length > 0 && (
+              <div className="rounded-lg border border-border bg-light-gray/30 p-4">
+                <h3 className="mb-3 font-semibold text-dark-gray flex items-center gap-2">
+                  <Mic2 className="h-4 w-4 text-primary" />
+                  Speakers / Hosts
+                </h3>
+                <ul className="space-y-2">
+                  {event.speakers.map((speaker, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between rounded-lg border border-border bg-white px-3 py-2"
+                    >
+                      <span className="font-medium text-dark-gray">
+                        {speaker.name || "Unnamed speaker"}
+                      </span>
+                      {speaker.title && (
+                        <span className="text-sm text-medium-gray">
+                          {speaker.title}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Description */}
             {event.description && (
