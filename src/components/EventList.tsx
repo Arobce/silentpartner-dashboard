@@ -42,7 +42,7 @@ export interface EventItem {
   location?: string;
   isOnline?: boolean;
   capacity?: number;
-  speakers?: SpeakerItem[];
+  speakers?: Speaker[];
   price?: number;
   hostId?: string;
 }
