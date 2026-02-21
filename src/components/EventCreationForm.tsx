@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+
+export interface Speaker {
+  id: string;
+  name: string;
+  title: string;
+}
 
 const EVENT_CATEGORIES = [
   "Hackathon",
@@ -26,6 +33,7 @@ export interface EventFormData {
   capacity: string;
   isPopular: boolean;
   price: string;
+  speakers: Speaker[];
 }
 
 const initialFormData: EventFormData = {
@@ -42,7 +50,12 @@ const initialFormData: EventFormData = {
   location: "",
   capacity: "",
   price: "0",
+  speakers: [],
 };
+
+function generateSpeakerId() {
+  return `speaker-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
 
 export type EventSubmitPayload = Omit<EventFormData, "capacity" | "price"> & {
   capacity: number;
@@ -91,6 +104,32 @@ export function EventCreationForm({
     setDateError("");
   };
 
+  const addSpeaker = () => {
+    setFormData((prev) => ({
+      ...prev,
+      speakers: [
+        ...prev.speakers,
+        { id: generateSpeakerId(), name: "", title: "" },
+      ],
+    }));
+  };
+
+  const removeSpeaker = (id: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      speakers: prev.speakers.filter((s) => s.id !== id),
+    }));
+  };
+
+  const updateSpeaker = (id: string, field: keyof Speaker, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      speakers: prev.speakers.map((s) =>
+        s.id === id ? { ...s, [field]: value } : s
+      ),
+    }));
+  };
+
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -123,6 +162,7 @@ export function EventCreationForm({
         capacity: payload.capacity,
         price: payload.price,
         hostId,
+        speakers: payload.speakers.filter((s) => s.name.trim() !== ""),
       };
 
       const response = await fetch("/api/events", {
@@ -425,6 +465,79 @@ export function EventCreationForm({
         </div>
         {Number(formData.price) === 0 && (
           <p className="text-xs text-medium-gray">0 = Free event</p>
+        )}
+      </div>
+
+      {/* Speakers */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium text-dark-gray">Speakers / Hosts</h4>
+          <button
+            type="button"
+            onClick={addSpeaker}
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-dark-gray transition-colors hover:bg-light-gray"
+          >
+            <Plus className="h-4 w-4" />
+            Add Speaker
+          </button>
+        </div>
+        {formData.speakers.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border bg-gray/50 px-4 py-6 text-center text-sm text-medium-gray">
+            No speakers added yet. Click &quot;Add Speaker&quot; to add event hosts.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {formData.speakers.map((speaker, index) => (
+              <div
+                key={speaker.id}
+                className="rounded-lg border border-border bg-white p-4"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-dark-gray">
+                    Speaker {index + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeSpeaker(speaker.id)}
+                    className="rounded p-1 text-medium-gray transition-colors hover:bg-red-50 hover:text-red-600"
+                    aria-label={`Remove speaker ${index + 1}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs text-medium-gray">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={speaker.name}
+                      onChange={(e) =>
+                        updateSpeaker(speaker.id, "name", e.target.value)
+                      }
+                      placeholder="e.g. Jane Doe"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-medium-gray">
+                      Title / Role
+                    </label>
+                    <input
+                      type="text"
+                      value={speaker.title}
+                      onChange={(e) =>
+                        updateSpeaker(speaker.id, "title", e.target.value)
+                      }
+                      placeholder="e.g. Keynote Speaker"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

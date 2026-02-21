@@ -107,6 +107,15 @@ export async function POST(req: Request) {
     const code = makeEventCode(eventName);
     const qrData = makeJoinUrl(code);
 
+    const speakers = Array.isArray(body.speakers)
+      ? body.speakers
+          .filter((s: { name?: string }) => s?.name?.trim())
+          .map((s: { name?: string; title?: string }) => ({
+            name: String(s.name ?? "").trim(),
+            title: String(s.title ?? "").trim(),
+          }))
+      : [];
+
     const docRef = await addDoc(collection(db, "events"), {
       name: eventName,
       code,
@@ -123,6 +132,7 @@ export async function POST(req: Request) {
       capacity,
       isPopular,
       price,
+      speakers,
 
       // Ownership
       hostId,
