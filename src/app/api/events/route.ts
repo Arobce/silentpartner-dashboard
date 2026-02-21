@@ -42,7 +42,7 @@ export async function GET(req: Request) {
         location: data.location,
         attendeeCount: data.attendeeCount ?? 0,
         code: data.code,
-        qrData: data.qrData,
+        qrData: data.code,
         hostId: data.hostId,
         companyName: data.companyName,
         category: data.category,
