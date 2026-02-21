@@ -7,6 +7,7 @@ export type CreateEventBody = {
   time?: string;   // "HH:mm"
   isOnline?: boolean;
   location?: string;
+  isPopular?: boolean;
   capacity?: number;
   price?: number;
   hostId?: string; // for now

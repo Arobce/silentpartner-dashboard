@@ -7,6 +7,8 @@ import {
   Calendar,
   Users,
 } from "lucide-react";
+import { Toaster } from 'react-hot-toast';
+
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -59,6 +61,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <main className="flex-1 md:pl-64">{children}</main>
+
+      <Toaster />
     </div>
   );
 }

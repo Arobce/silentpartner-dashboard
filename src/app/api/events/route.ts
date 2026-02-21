@@ -49,6 +49,7 @@ export async function GET(req: Request) {
         description: data.description,
         isOnline: data.isOnline,
         capacity: data.capacity,
+        isPopular: data.isPopular,
         price: data.price,
       };
     });
@@ -70,6 +71,8 @@ export async function POST(req: Request) {
     const location = String(body.location ?? "").trim();
     const isOnline = Boolean(body.isOnline);
     const hostId = String(body.hostId ?? "").trim();
+    
+    const isPopular = Boolean(body.isPopular);
 
     const capacity = Number.isFinite(body.capacity) ? Number(body.capacity) : 0;
     const price = Number.isFinite(body.price) ? Number(body.price) : 0;
@@ -118,6 +121,7 @@ export async function POST(req: Request) {
       description,
       isOnline,
       capacity,
+      isPopular,
       price,
 
       // Ownership

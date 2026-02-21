@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const EVENT_CATEGORIES = [
   "Hackathon",
@@ -23,6 +24,7 @@ export interface EventFormData {
   isOnline: boolean;
   location: string;
   capacity: string;
+  isPopular: boolean;
   price: string;
 }
 
@@ -36,6 +38,7 @@ const initialFormData: EventFormData = {
   time: "",
   isMultiDay: false,
   isOnline: false,
+  isPopular: false,
   location: "",
   capacity: "",
   price: "0",
@@ -52,7 +55,11 @@ interface EventCreationFormProps {
   readonly hostId: string;
 }
 
-export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationFormProps) {
+export function EventCreationForm({
+  onSubmit,
+  onCancel,
+  hostId,
+}: EventCreationFormProps) {
   const [formData, setFormData] = useState<EventFormData>(initialFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +68,7 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
@@ -111,6 +118,7 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
         date: payload.startDate, // Use startDate as the main date
         time: payload.time,
         isOnline: payload.isOnline,
+        isPopular: payload.isPopular,
         location: payload.location,
         capacity: payload.capacity,
         price: payload.price,
@@ -132,13 +140,15 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
 
       const data = await response.json();
       console.log("Event created successfully:", data);
-      
+
       // Reset form
       setFormData(initialFormData);
-      
+
+      toast.success("Event created successfully!", { duration: 2000 });
+
       // Reload page to show the new event
       window.location.reload();
-      
+
       // Call onSubmit callback
       onSubmit?.(payload);
     } catch (err) {
@@ -327,7 +337,9 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
           </div>
         )}
         {dateError && (
-          <p className="text-sm text-error" role="alert">{dateError}</p>
+          <p className="text-sm text-error" role="alert">
+            {dateError}
+          </p>
         )}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm text-medium-gray">
@@ -349,9 +361,24 @@ export function EventCreationForm({ onSubmit, onCancel, hostId }: EventCreationF
             required
             className="w-full rounded-lg border border-border px-3 py-2 text-sm text-dark-gray focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             placeholder={
-              formData.isOnline ? "e.g. Zoom, Google Meet link" : "Venue address"
+              formData.isOnline
+                ? "e.g. Zoom, Google Meet link"
+                : "Venue address"
             }
           />
+        </div>
+
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm text-medium-gray">
+            <input
+              type="checkbox"
+              name="isPopular"
+              checked={formData.isPopular}
+              onChange={handleChange}
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            Is Popular
+          </label>
         </div>
       </div>
 
