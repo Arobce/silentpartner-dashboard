@@ -1,4 +1,4 @@
-# Silent Partner — Dashboard
+# Silent Partner (devHacks 2026 Project) — Dashboard
 
 A web dashboard for the Silent Partner system. Responsible for creating and viewing events.
 
